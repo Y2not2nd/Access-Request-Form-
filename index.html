@@ -11,31 +11,30 @@
         <div class="header">
             <h1>Trusted Research Environment – Research Request</h1>
         </div>
-        
+
         <div class="disclaimer">
             <strong>Important:</strong> All requests are subject to governance and approval. Please ensure all information provided is accurate and complete.
         </div>
 
         <div class="form-content">
             <div class="success-message" id="successMessage">
-                Request submitted successfully! You will receive a confirmation email shortly.
+                Request submitted successfully. You will receive an approval email shortly.
             </div>
 
             <div class="info-box">
                 <h3>Before You Begin</h3>
                 <ul>
-                    <li>Ensure you have obtained verbal approval from your line manager before submitting this request</li>
+                    <li>Ensure you have obtained approval from your line manager before submitting this request</li>
                     <li>All fields marked with <span class="required-indicator">*</span> are mandatory</li>
-                    <li>Your workspace name will be automatically generated based on your department and request type</li>
-                    <li>Requests are typically processed within 5-10 business days</li>
+                    <li>Your workspace name is automatically generated from your inputs</li>
                 </ul>
             </div>
 
             <form id="treRequestForm">
-                <!-- Section 1: Requester Details -->
+                <!-- Section 1 -->
                 <div class="section">
                     <div class="section-title">1. Requester Details</div>
-                    
+
                     <div class="form-row">
                         <div class="form-group">
                             <label for="requesterName" class="required">Requester Name</label>
@@ -70,7 +69,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="department" class="required">Department or Research Field</label>
+                            <label for="department" class="required">Department</label>
                             <select id="department" name="department" required>
                                 <option value="">Select department...</option>
                                 <option value="Biology">Biology</option>
@@ -92,13 +91,27 @@
                             <div class="error-message">Please select a department</div>
                         </div>
                     </div>
+
+                    <div class="form-row">
+                        <div class="form-group hidden" id="jobTitleOtherGroup">
+                            <label for="jobTitleOther" class="required">Job Title, Other</label>
+                            <input type="text" id="jobTitleOther" name="jobTitleOther" placeholder="Enter your job title">
+                            <div class="error-message">This field is required when Other is selected</div>
+                        </div>
+
+                        <div class="form-group hidden" id="departmentOtherGroup">
+                            <label for="departmentOther" class="required">Department, Other</label>
+                            <input type="text" id="departmentOther" name="departmentOther" placeholder="Enter your department">
+                            <div class="error-message">This field is required when Other is selected</div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Section 2: Line Manager Approval -->
+                <!-- Section 2 -->
                 <div class="section">
                     <div class="section-title">2. Line Manager Approval Details</div>
-                    <div class="helper-text section-helper">Your line manager will receive an automated email to approve this request</div>
-                    
+                    <div class="helper-text section-helper">Your line manager details are captured for governance, approvals are handled by the platform</div>
+
                     <div class="form-row">
                         <div class="form-group">
                             <label for="managerName" class="required">Line Manager Name</label>
@@ -114,10 +127,10 @@
                     </div>
                 </div>
 
-                <!-- Section 3: Request Classification -->
+                <!-- Section 3 -->
                 <div class="section">
                     <div class="section-title">3. Request Classification</div>
-                    
+
                     <div class="form-row">
                         <div class="form-group">
                             <label for="requestType" class="required">Request Type</label>
@@ -144,6 +157,12 @@
                     </div>
 
                     <div class="form-row">
+                        <div class="form-group hidden" id="requestTypeOtherGroup">
+                            <label for="requestTypeOther" class="required">Request Type, Other</label>
+                            <input type="text" id="requestTypeOther" name="requestTypeOther" placeholder="Enter request type">
+                            <div class="error-message">This field is required when Other is selected</div>
+                        </div>
+
                         <div class="form-group">
                             <label for="expectedDuration" class="required">Expected Duration</label>
                             <select id="expectedDuration" name="expectedDuration" required>
@@ -154,19 +173,21 @@
                             </select>
                             <div class="error-message">Please select an expected duration</div>
                         </div>
+                    </div>
 
+                    <div class="form-row">
                         <div class="form-group full-width">
                             <label for="businessJustification" class="required">Business / Research Justification</label>
-                            <textarea id="businessJustification" name="businessJustification" placeholder="Please provide a detailed justification for your TRE access request, including research objectives and expected outcomes" required></textarea>
+                            <textarea id="businessJustification" name="businessJustification" placeholder="Provide justification, objectives, expected outcomes" required></textarea>
                             <div class="error-message">This field is required</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section 4: Infrastructure Requirement -->
+                <!-- Section 4 -->
                 <div class="section">
                     <div class="section-title">4. Infrastructure Requirement</div>
-                    
+
                     <div class="form-row">
                         <div class="form-group">
                             <label for="infrastructureTemplate" class="required">Infrastructure Template</label>
@@ -176,23 +197,22 @@
                                 <option value="Dedicated compute (isolated resources)">Dedicated Compute (Isolated Resources)</option>
                                 <option value="Connect to existing system">Connect to Existing System</option>
                                 <option value="Data-only workspace (storage + access)">Data-Only Workspace (Storage + Access)</option>
-                                <option value="Other">Other (Please Specify)</option>
+                                <option value="Other">Other</option>
                             </select>
                             <div class="error-message">Please select an infrastructure template</div>
                         </div>
                     </div>
 
                     <div class="form-group hidden" id="infrastructureOtherGroup">
-                        <label for="infrastructureOther" class="required">Please specify infrastructure requirements</label>
-                        <textarea id="infrastructureOther" name="infrastructureOther" placeholder="Describe your specific infrastructure requirements in detail"></textarea>
+                        <label for="infrastructureOther" class="required">Infrastructure, Other</label>
+                        <textarea id="infrastructureOther" name="infrastructureOther" placeholder="Describe your specific infrastructure requirements"></textarea>
                         <div class="error-message">This field is required when Other is selected</div>
                     </div>
                 </div>
 
-                <!-- Data Protection Notice -->
                 <div class="data-protection-notice">
                     <h4>Data Protection Notice</h4>
-                    <p>The information you provide in this form will be processed in accordance with data protection regulations. Your data will be used solely for the purpose of processing your TRE access request and will be shared only with relevant governance and approval personnel. By submitting this form, you consent to this processing.</p>
+                    <p>The information in this form is used only to process your TRE request and is shared only with governance and approval personnel.</p>
                 </div>
 
                 <div class="submit-section">
