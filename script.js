@@ -1,54 +1,72 @@
-<script>
-const templateSelect = document.getElementById("templateSelect");
-const otherBox = document.getElementById("otherBox");
+document.addEventListener("DOMContentLoaded", () => {
 
-templateSelect.addEventListener("change", () => {
-  otherBox.classList.toggle("hidden", templateSelect.value !== "other");
-});
+  const templateSelect = document.getElementById("templateSelect");
+  const otherBox = document.getElementById("otherBox");
+  const form = document.getElementById("treForm");
 
-document.getElementById("treForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+  if (templateSelect && otherBox) {
+    templateSelect.addEventListener("change", () => {
+      otherBox.classList.toggle(
+        "hidden",
+        templateSelect.value !== "other"
+      );
+    });
+  }
 
-  const f = e.target;
+  if (!form) {
+    console.error("Form #treForm not found");
+    return;
+  }
 
-  const payload = {
-    requester: {
-      fullName: f.requesterName.value,
-      email: f.requesterEmail.value,
-      department: f.department.value,
-      role: f.role.value
-    },
-    lineManager: {
-      fullName: f.managerName.value,
-      email: f.managerEmail.value
-    },
-    workspace: {
-      name: f.workspaceName.value,
-      purpose: f.purpose.value,
-      justification: f.justification.value
-    },
-    classification: {
-      requestType: f.requestType.value,
-      expectedDuration: f.duration.value,
-      urgency: f.urgency.value
-    },
-    infrastructure: {
-      template: f.template.value,
-      otherDetails: f.otherDetails?.value || null
-    },
-    audit: {
-      submittedAt: new Date().toISOString(),
-      source: "tre-request-portal",
-      version: "1.0"
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const f = e.target;
+
+    const payload = {
+      requester: {
+        fullName: f.requesterName.value,
+        email: f.requesterEmail.value,
+        department: f.department.value,
+        role: f.role.value
+      },
+      lineManager: {
+        fullName: f.managerName.value,
+        email: f.managerEmail.value
+      },
+      workspace: {
+        name: f.workspaceName.value,
+        purpose: f.purpose.value,
+        justification: f.justification.value
+      },
+      classification: {
+        requestType: f.requestType.value,
+        expectedDuration: f.duration.value,
+        urgency: f.urgency.value
+      },
+      infrastructure: {
+        template: f.template.value,
+        otherDetails: f.otherDetails?.value || null
+      },
+      audit: {
+        submittedAt: new Date().toISOString(),
+        source: "tre-request-portal",
+        version: "1.0"
+      }
+    };
+
+    const res = await fetch("https://YOUR-LA1-ENDPOINT-HERE", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      alert("Submission failed");
+      return;
     }
-  };
 
-  await fetch("https://YOUR-LA1-ENDPOINT-HERE", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
+    alert("Request submitted for approval");
   });
 
-  alert("Request submitted for approval");
 });
-</script>
