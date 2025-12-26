@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const statusMessage = document.getElementById("statusMessage");
 
   // CHANGE THIS
-  const LOGIC_APP_URL = "https://YOUR-LA1-ENDPOINT-HERE";
+  const LOGIC_APP_URL = "https://prod-06.uksouth.logic.azure.com:443/workflows/ae95d8bc9250469b8f4da1d0927b4d60/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=zyop7N-T7b_0UwTtNA4ZIKs9AI7snbsP9PhTXPGV1L4";
 
   templateSelect.addEventListener("change", () => {
     if (templateSelect.value === "other") {
