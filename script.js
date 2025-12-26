@@ -10,8 +10,8 @@ const infrastructureTemplate = document.getElementById('infrastructureTemplate')
 const infrastructureOtherGroup = document.getElementById('infrastructureOtherGroup');
 const infrastructureOther = document.getElementById('infrastructureOther');
 
-// Show/hide "Other" text field for infrastructure
-infrastructureTemplate.addEventListener('change', function() {
+// Show/hide "Other" text field
+infrastructureTemplate.addEventListener('change', function () {
     if (this.value === 'Other') {
         infrastructureOtherGroup.classList.remove('hidden');
         infrastructureOther.required = true;
@@ -22,133 +22,79 @@ infrastructureTemplate.addEventListener('change', function() {
     }
 });
 
-// Reset button handler
-resetButton.addEventListener('click', function() {
-    if (confirm('Are you sure you want to clear all form data? This action cannot be undone.')) {
-        form.reset();
-        infrastructureOtherGroup.classList.add('hidden');
-        infrastructureOther.required = false;
-
-        // Clear all error states
-        document.querySelectorAll('.form-group').forEach(group => {
-            group.classList.remove('error');
-        });
-
-        successMessage.style.display = 'none';
-
-        // Scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-});
-
-// Helper function to generate workspace name
+// Helper to generate workspace name
 function generateWorkspaceName() {
     const department = document.getElementById('department').value.trim();
     const requestType = document.getElementById('requestType').value.trim();
-    const workspaceBase = [department, requestType].filter(Boolean).join('-');
 
-    return (workspaceBase || 'tre-workspace')
+    return [department, requestType]
+        .filter(Boolean)
+        .join('-')
         .toLowerCase()
         .replace(/[^a-z0-9-]/g, '-')
         .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '') || 'tre-workspace';
+        .replace(/^-|-$/g, '');
 }
 
-// Form submission handler
-form.addEventListener('submit', function(e) {
+// Form submission
+form.addEventListener('submit', function (e) {
     e.preventDefault();
 
-    // Clear previous errors
-    document.querySelectorAll('.form-group').forEach(group => {
-        group.classList.remove('error');
-    });
-    successMessage.style.display = 'none';
-
-    // Validate form
     if (!form.checkValidity()) {
-        const invalidFields = form.querySelectorAll(':invalid');
-        invalidFields.forEach(field => {
-            const formGroup = field.closest('.form-group');
-            if (formGroup) {
-                formGroup.classList.add('error');
-            }
-        });
-
-        const firstError = document.querySelector('.form-group.error');
-        if (firstError) {
-            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
         return;
     }
 
-    // Build minimal payload required by LA1
     const payload = {
+        // Backward-compatible fields
         workspaceName: generateWorkspaceName(),
-        owner: document.getElementById('requesterName').value.trim()
+        owner: document.getElementById('requesterName').value.trim(),
+
+        // Full structured intake
+        requester: {
+            name: document.getElementById('requesterName').value.trim(),
+            email: document.getElementById('requesterEmail').value.trim(),
+            department: document.getElementById('department').value.trim(),
+            role: document.getElementById('role').value.trim()
+        },
+
+        lineManager: {
+            name: document.getElementById('lineManagerName').value.trim(),
+            email: document.getElementById('lineManagerEmail').value.trim()
+        },
+
+        request: {
+            type: document.getElementById('requestType').value.trim(),
+            urgency: document.getElementById('urgency').value.trim(),
+            expectedDuration: document.getElementById('expectedDuration').value.trim()
+        },
+
+        justification: {
+            business: document.getElementById('businessJustification').value.trim(),
+            research: document.getElementById('researchJustification').value.trim()
+        },
+
+        infrastructure: {
+            template: infrastructureTemplate.value,
+            other: infrastructureOther.value.trim()
+        }
     };
 
-    // Submit to API
     submitButton.disabled = true;
     submitButton.textContent = 'Submitting...';
 
     fetch(API_ENDPOINT, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     })
-        .then(response => {
-            if (!response.ok) {
-                return response.text().then(errorText => {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}${errorText ? ' - ' + errorText : ''}`);
-                });
-            }
-            return response;
+        .then(r => {
+            if (!r.ok) throw new Error('Submission failed');
         })
-        .then(() => {
-            console.log('Form submitted successfully:', payload);
-        })
-        .catch(error => {
-            console.error('Submission error:', error);
-            console.error('Payload attempted:', payload);
-        });
+        .catch(err => console.error(err));
 
-    // Show success immediately (do not wait for downstream approvals)
     successMessage.style.display = 'block';
     form.reset();
     infrastructureOtherGroup.classList.add('hidden');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
     submitButton.disabled = false;
     submitButton.textContent = 'Submit Request';
-});
-
-// Real-time validation feedback
-form.querySelectorAll('input, select, textarea').forEach(field => {
-    field.addEventListener('blur', function() {
-        const formGroup = this.closest('.form-group');
-        if (formGroup) {
-            if (this.checkValidity()) {
-                formGroup.classList.remove('error');
-            } else {
-                formGroup.classList.add('error');
-            }
-        }
-    });
-
-    field.addEventListener('input', function() {
-        const formGroup = this.closest('.form-group');
-        if (formGroup && formGroup.classList.contains('error')) {
-            if (this.checkValidity()) {
-                formGroup.classList.remove('error');
-            }
-        }
-    });
-});
-
-// Prevent accidental form submission on Enter key (except in textareas)
-form.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
-        e.preventDefault();
-    }
 });
