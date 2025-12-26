@@ -14,9 +14,7 @@
       margin: auto;
     }
 
-    h1 {
-      margin-bottom: 24px;
-    }
+    h1 { margin-bottom: 24px; }
 
     .card {
       background: white;
@@ -40,18 +38,12 @@
       border-radius: 4px;
     }
 
-    textarea {
-      min-height: 90px;
-    }
+    textarea { min-height: 90px; }
 
     .row {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
-    }
-
-    .hidden {
-      display: none;
     }
 
     button {
@@ -65,9 +57,7 @@
       cursor: pointer;
     }
 
-    button:hover {
-      background: #1e4fd6;
-    }
+    button:hover { background: #1e4fd6; }
   </style>
 </head>
 
@@ -77,9 +67,9 @@
 
 <form id="treForm">
 
-  <!-- Requester -->
   <div class="card">
     <h3>Requester Information</h3>
+
     <div class="row">
       <div>
         <label>Full Name</label>
@@ -90,37 +80,10 @@
         <input name="requesterEmail" type="email" required />
       </div>
     </div>
-
-    <div class="row">
-      <div>
-        <label>Department</label>
-        <input name="department" required />
-      </div>
-      <div>
-        <label>Role / Discipline</label>
-        <input name="role" required />
-      </div>
-    </div>
   </div>
 
-  <!-- Line Manager -->
   <div class="card">
-    <h3>Line Manager Approval</h3>
-    <div class="row">
-      <div>
-        <label>Manager Name</label>
-        <input name="managerName" required />
-      </div>
-      <div>
-        <label>Manager Email</label>
-        <input name="managerEmail" type="email" required />
-      </div>
-    </div>
-  </div>
-
-  <!-- Workspace -->
-  <div class="card">
-    <h3>Workspace Details</h3>
+    <h3>Workspace</h3>
 
     <label>Workspace Name</label>
     <input
@@ -129,65 +92,12 @@
       pattern="[a-z0-9-]+"
       placeholder="lowercase-hyphens-only"
     />
-
-    <label>Purpose</label>
-    <textarea name="purpose" required></textarea>
-
-    <label>Business / Research Justification</label>
-    <textarea name="justification" required></textarea>
-  </div>
-
-  <!-- Classification -->
-  <div class="card">
-    <h3>Classification</h3>
-
-    <label>Request Type</label>
-    <select name="requestType" required>
-      <option value="standard">Standard</option>
-      <option value="emergency">Emergency</option>
-      <option value="temporary">Temporary</option>
-      <option value="data-only">Data Only</option>
-    </select>
-
-    <label>Expected Duration</label>
-    <select name="duration" required>
-      <option value="short">Short-term (&lt; 3 months)</option>
-      <option value="medium">Medium (3–12 months)</option>
-      <option value="long">Long-term (&gt; 12 months)</option>
-    </select>
-
-    <label>Urgency</label>
-    <select name="urgency" required>
-      <option value="normal">Normal</option>
-      <option value="urgent">Urgent</option>
-    </select>
-  </div>
-
-  <!-- Infrastructure -->
-  <div class="card">
-    <h3>Infrastructure Requirements</h3>
-
-    <label>Template</label>
-    <select name="template" id="templateSelect" required>
-      <option value="shared">Shared Compute</option>
-      <option value="dedicated">Dedicated Compute</option>
-      <option value="connect-existing">Connect Existing</option>
-      <option value="data-only">Data Only</option>
-      <option value="other">Other</option>
-    </select>
-
-    <div id="otherBox" class="hidden">
-      <label>Other Requirements</label>
-      <textarea name="otherDetails"></textarea>
-    </div>
   </div>
 
   <button type="submit">Submit Request</button>
 
 </form>
 
-<!-- JS MUST be loaded here -->
 <script src="./script.js"></script>
-
 </body>
 </html>
