@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TRE Workspace Request</title>
+  <style>
+    body { font-family: system-ui; background: #f7f9fc; padding: 40px; }
+    .card { background: white; padding: 24px; margin-bottom: 20px; border-radius: 8px; }
+    label { display: block; margin-top: 12px; font-weight: 500; }
+    input, textarea, select { width: 100%; padding: 8px; margin-top: 4px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .hidden { display: none; }
+    button { padding: 12px 18px; font-size: 16px; }
+  </style>
+</head>
+<body>
+
+<h1>Trusted Research Environment – Workspace Request</h1>
+
+<form id="treForm">
+
+  <!-- Requester -->
+  <div class="card">
+    <h3>Requester Information</h3>
+    <div class="row">
+      <div>
+        <label>Full Name</label>
+        <input required name="requesterName">
+      </div>
+      <div>
+        <label>Work Email</label>
+        <input type="email" required name="requesterEmail">
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Department</label>
+        <input required name="department">
+      </div>
+      <div>
+        <label>Role / Discipline</label>
+        <input required name="role">
+      </div>
+    </div>
+  </div>
+
+  <!-- Line Manager -->
+  <div class="card">
+    <h3>Line Manager Approval</h3>
+    <div class="row">
+      <div>
+        <label>Manager Name</label>
+        <input required name="managerName">
+      </div>
+      <div>
+        <label>Manager Email</label>
+        <input type="email" required name="managerEmail">
+      </div>
+    </div>
+  </div>
+
+  <!-- Workspace -->
+  <div class="card">
+    <h3>Workspace Details</h3>
+    <label>Workspace Name</label>
+    <input required pattern="[a-z0-9-]+" placeholder="lowercase-hyphens-only" name="workspaceName">
+
+    <label>Purpose</label>
+    <textarea required name="purpose"></textarea>
+
+    <label>Business / Research Justification</label>
+    <textarea required name="justification"></textarea>
+  </div>
+
+  <!-- Classification -->
+  <div class="card">
+    <h3>Classification</h3>
+
+    <label>Request Type</label>
+    <select required name="requestType">
+      <option value="standard">Standard</option>
+      <option value="emergency">Emergency</option>
+      <option value="temporary">Temporary</option>
+      <option value="data-only">Data Only</option>
+    </select>
+
+    <label>Expected Duration</label>
+    <select required name="duration">
+      <option value="short">Short-term (&lt; 3 months)</option>
+      <option value="medium">Medium (3–12 months)</option>
+      <option value="long">Long-term (&gt; 12 months)</option>
+    </select>
+
+    <label>Urgency</label>
+    <select required name="urgency">
+      <option value="normal">Normal</option>
+      <option value="urgent">Urgent</option>
+    </select>
+  </div>
+
+  <!-- Infrastructure -->
+  <div class="card">
+    <h3>Infrastructure Requirements</h3>
+
+    <label>Template</label>
+    <select name="template" id="templateSelect" required>
+      <option value="shared">Shared Compute</option>
+      <option value="dedicated">Dedicated Compute</option>
+      <option value="connect-existing">Connect Existing</option>
+      <option value="data-only">Data Only</option>
+      <option value="other">Other</option>
+    </select>
+
+    <div id="otherBox" class="hidden">
+      <label>Other Requirements</label>
+      <textarea name="otherDetails"></textarea>
+    </div>
+  </div>
+
+  <button type="submit">Submit Request</button>
+
+</form>
