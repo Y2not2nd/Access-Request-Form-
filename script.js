@@ -45,17 +45,17 @@ resetButton.addEventListener('click', function() {
 function generateWorkspaceName() {
     const department = document.getElementById('department').value.trim();
     const requestType = document.getElementById('requestType').value.trim();
-    const timestamp = Date.now().toString().slice(-6);
-    
-    // Create a clean workspace name: dept-type-timestamp
-    const deptCode = department.toLowerCase().replace(/\s+/g, '-').substring(0, 10);
-    const typeCode = requestType.toLowerCase().replace(/\s+/g, '-').substring(0, 8);
-    
-    return `ws-${deptCode}-${typeCode}-${timestamp}`;
+    const workspaceBase = [department, requestType].filter(Boolean).join('-');
+
+    return (workspaceBase || 'tre-workspace')
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '') || 'tre-workspace';
 }
 
 // Form submission handler
-form.addEventListener('submit', async function(e) {
+form.addEventListener('submit', function(e) {
     e.preventDefault();
 
     // Clear previous errors
@@ -81,23 +81,23 @@ form.addEventListener('submit', async function(e) {
         return;
     }
 
-    // Build complete payload matching LA1 schema
+    // Build complete payload matching your desired structure
     const payload = {
         workspaceName: generateWorkspaceName(),
-        owner: document.getElementById('requesterEmail').value.trim(),
+        owner: document.getElementById('requesterName').value.trim(),
         requester: {
             name: document.getElementById('requesterName').value.trim(),
             email: document.getElementById('requesterEmail').value.trim(),
             role: document.getElementById('jobTitle').value.trim(),
-            department: document.getElementById('department').value.trim()
+            department: document.getElementById('department').value.toLowerCase().replace(/\s+/g, '')
         },
         manager: {
             name: document.getElementById('managerName').value.trim(),
             email: document.getElementById('managerEmail').value.trim()
         },
         request: {
-            type: document.getElementById('requestType').value.toLowerCase().replace(/\s+/g, ''),
-            urgency: document.getElementById('urgency').value.trim(),
+            type: document.getElementById('requestType').value.toLowerCase(),
+            urgency: document.getElementById('urgency').value.toLowerCase(),
             expectedDuration: document.getElementById('expectedDuration').value.trim()
         },
         justification: {
@@ -108,10 +108,12 @@ form.addEventListener('submit', async function(e) {
             dataClassification: "restricted"
         },
         infrastructure: {
-            template: document.getElementById('infrastructureTemplate').value.trim(),
-            options: infrastructureTemplate.value === 'Other' ? {
-                customRequirements: infrastructureOther.value.trim()
-            } : {}
+            template: "standard-research-workspace",
+            options: {
+                gpu: false,
+                privateEndpoints: true,
+                externalAccess: false
+            }
         }
     };
 
@@ -119,33 +121,36 @@ form.addEventListener('submit', async function(e) {
     submitButton.disabled = true;
     submitButton.textContent = 'Submitting...';
 
-    try {
-        const response = await fetch(API_ENDPOINT, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
+    fetch(API_ENDPOINT, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(errorText => {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}${errorText ? ' - ' + errorText : ''}`);
+                });
+            }
+            return response;
+        })
+        .then(() => {
+            console.log('Form submitted successfully:', payload);
+        })
+        .catch(error => {
+            console.error('Submission error:', error);
+            console.error('Payload attempted:', payload);
         });
 
-        if (response.ok) {
-            successMessage.style.display = 'block';
-            form.reset();
-            infrastructureOtherGroup.classList.add('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            console.log('Form submitted successfully:', payload);
-        } else {
-            const errorText = await response.text();
-            throw new Error(`HTTP ${response.status}: ${response.statusText}${errorText ? ' - ' + errorText : ''}`);
-        }
-    } catch (error) {
-        alert('Submission failed: ' + error.message + '\n\nPlease try again or contact support if the problem persists.');
-        console.error('Submission error:', error);
-        console.error('Payload attempted:', payload);
-    } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Submit Request';
-    }
+    // Show success immediately (do not wait for downstream approvals)
+    successMessage.style.display = 'block';
+    form.reset();
+    infrastructureOtherGroup.classList.add('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    submitButton.disabled = false;
+    submitButton.textContent = 'Submit Request';
 });
 
 // Real-time validation feedback
