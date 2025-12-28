@@ -19,7 +19,7 @@ on:
 
 env:
   AZURE_SUBSCRIPTION_ID: '4d38ea20-7a50-4815-9c82-527d9f182f8b'
-  AZURE_TENANT_ID: 'YOUR_TENANT_ID'
+  AZURE_TENANT_ID: 'e26dddaa-9c83-4a37-84ed-5bb0f76e4009'
   STORAGE_ACCOUNT: 'stretrequestsuks'
   TEMPLATE_SPEC_NAME: 'tre-standard-research-workspace'
   TEMPLATE_SPEC_RG: 'rg-tre-mgmt-uksouth'
