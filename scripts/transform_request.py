@@ -14,11 +14,16 @@ with open(args.input) as f:
 with open(args.config) as f:
     config = json.load(f)
 
+# Derive workspace name
 workspace_name = request.get("workspaceName", "").lower()
+
+# Derive department (used for RG naming, not template parameters)
 department = request.get("requester", {}).get("department", "unknown").lower()
 
+# Deterministic RG name (execution metadata, not ARM parameter)
 resource_group_name = f"rg-tre-{department}"
 
+# Canonical tag set
 tags = {
     "CostCentre": "TRE",
     "DataClassification": "restricted",
@@ -27,13 +32,17 @@ tags = {
     "System": "TRE"
 }
 
+# ARM deployment parameters (MUST match Template Spec exactly)
 parameters = {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "workspaceName": { "value": workspace_name },
-        "location": { "value": config["location"] },
-        "resourceGroupName": { "value": resource_group_name },
+        "workspaceName": {
+            "value": workspace_name
+        },
+        "location": {
+            "value": config["location"]
+        },
         "privateEndpointSubnetId": {
             "value": config["network"]["privateEndpointSubnetId"]
         },
@@ -52,6 +61,7 @@ parameters = {
 with open(args.output, "w") as f:
     json.dump(parameters, f, indent=2)
 
+# Execution metadata logging (for GitHub Actions / audit)
 print(f"Workspace: {workspace_name}")
-print(f"Resource Group: {resource_group_name}")
+print(f"Derived Resource Group: {resource_group_name}")
 print("Owner tag: TRE-Platform")
