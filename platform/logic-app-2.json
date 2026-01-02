@@ -1,0 +1,268 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.1.0.0",
+        "triggers": {
+            "When_an_HTTP_request_is_received": {
+                "type": "Request",
+                "kind": "Http",
+                "inputs": {
+                    "method": "POST",
+                    "schema": {
+                        "type": "object",
+                        "required": [
+                            "requestId",
+                            "workspaceName",
+                            "owner",
+                            "location",
+                            "researchTags",
+                            "network",
+                            "dns",
+                            "templateSpec"
+                        ],
+                        "properties": {
+                            "requestId": {
+                                "type": "string"
+                            },
+                            "workspaceName": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "researchTags": {
+                                "type": "object"
+                            },
+                            "network": {
+                                "type": "object",
+                                "required": [
+                                    "privateEndpointSubnetId"
+                                ],
+                                "properties": {
+                                    "privateEndpointSubnetId": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "dns": {
+                                "type": "object",
+                                "required": [
+                                    "privateDnsSubscriptionId",
+                                    "privateDnsResourceGroupName"
+                                ],
+                                "properties": {
+                                    "privateDnsSubscriptionId": {
+                                        "type": "string"
+                                    },
+                                    "privateDnsResourceGroupName": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "templateSpec": {
+                                "type": "object",
+                                "required": [
+                                    "id"
+                                ],
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "actions": {
+            "Validate_Internal_Caller": {
+                "actions": {
+                    "Get_blob_content_using_path_(V2)": {
+                        "type": "ApiConnection",
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "name": "@parameters('$connections')['azureblob']['connectionId']"
+                                }
+                            },
+                            "method": "get",
+                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('stretrequestsuks'))}/GetFileContentByPath",
+                            "queries": {
+                                "path": "tre-intake/approved/@{triggerBody()?['requestId']}.json",
+                                "inferContentType": true,
+                                "queryParametersSingleEncoded": true
+                            }
+                        }
+                    },
+                    "Send_Platform_Approval_Email": {
+                        "runAfter": {
+                            "Get_blob_content_using_path_(V2)": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "ApiConnectionWebhook",
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "name": "@parameters('$connections')['outlook']['connectionId']"
+                                }
+                            },
+                            "body": {
+                                "NotificationUrl": "@listCallbackUrl()",
+                                "Message": {
+                                    "To": "yassin_123@hotmail.co.uk",
+                                    "Subject": "TRE Platform – Deployment Approval Required",
+                                    "Importance": "Normal",
+                                    "Options": "Approve, Reject",
+                                    "Body": "<p>A new <strong>Trusted Research Environment (TRE)</strong> deployment request requires your approval.</p>\n\n<table style=\"border-collapse:collapse\">\n  <tr>\n    <td style=\"padding:6px 12px\"><strong>Request ID</strong></td>\n    <td style=\"padding:6px 12px\">@{triggerBody()?['requestId']}</td>\n  </tr>\n  <tr>\n    <td style=\"padding:6px 12px\"><strong>Workspace Name</strong></td>\n    <td style=\"padding:6px 12px\">@{triggerBody()?['workspaceName']}</td>\n  </tr>\n  <tr>\n    <td style=\"padding:6px 12px\"><strong>Owner</strong></td>\n    <td style=\"padding:6px 12px\">@{triggerBody()?['owner']}</td>\n  </tr>\n  <tr>\n    <td style=\"padding:6px 12px\"><strong>Location</strong></td>\n    <td style=\"padding:6px 12px\">@{triggerBody()?['location']}</td>\n  </tr>\n  <tr>\n    <td style=\"padding:6px 12px\"><strong>Template Spec</strong></td>\n    <td style=\"padding:6px 12px\">@{triggerBody()?['templateSpec']?['id']}</td>\n  </tr>\n</table>\n\n<p>Please select <strong>Approve</strong> or <strong>Reject</strong> to continue.</p>\n\n<p style=\"font-size:12px;color:#666\">This request and approval decision will be logged and retained for audit purposes.</p>"
+                                }
+                            },
+                            "path": "/approvalmail/$subscriptions"
+                        }
+                    },
+                    "Platform_Approval_Decision": {
+                        "actions": {
+                            "Get_secret_1": {
+                                "type": "ApiConnection",
+                                "inputs": {
+                                    "host": {
+                                        "connection": {
+                                            "name": "@parameters('$connections')['keyvault']['connectionId']"
+                                        }
+                                    },
+                                    "method": "get",
+                                    "path": "/secrets/@{encodeURIComponent('github-token')}/value"
+                                },
+                                "runtimeConfiguration": {
+                                    "secureData": {
+                                        "properties": [
+                                            "inputs",
+                                            "outputs"
+                                        ]
+                                    }
+                                }
+                            },
+                            "HTTP": {
+                                "runAfter": {
+                                    "Get_secret_1": [
+                                        "Succeeded"
+                                    ]
+                                },
+                                "type": "Http",
+                                "inputs": {
+                                    "uri": "https://api.github.com/repos/Y2not2nd/TRE/actions/workflows/tre-deployment.yml/dispatches",
+                                    "method": "POST",
+                                    "headers": {
+                                        "Authorization": "Bearer @{body('Get_secret_1')?['value']}",
+                                        "Accept": "application/vnd.github.v3+json",
+                                        "X-GitHub-Api-Version": "2022-11-28",
+                                        "User-Agent": "LogicApp-TRE-Platform"
+                                    },
+                                    "body": {
+                                        "ref": "main",
+                                        "inputs": {
+                                            "correlationId": "@{triggerBody()?['requestId']}",
+                                            "blobContainer": "tre-intake",
+                                            "blobPath": "approved/@{triggerBody()?['requestId']}.json"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "runAfter": {
+                            "Send_Platform_Approval_Email": [
+                                "Succeeded"
+                            ]
+                        },
+                        "else": {
+                            "actions": {
+                                "Response_Rejected": {
+                                    "type": "Response",
+                                    "inputs": {
+                                        "statusCode": 403,
+                                        "body": {
+                                            "status": "Rejected",
+                                            "message": "Deployment rejected at platform approval stage."
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "expression": {
+                            "equals": [
+                                "@body('Send_Platform_Approval_Email')?['SelectedOption']",
+                                "Approve"
+                            ]
+                        },
+                        "type": "If"
+                    }
+                },
+                "runAfter": {},
+                "else": {
+                    "actions": {
+                        "Response_Unauthorized": {
+                            "type": "Response",
+                            "inputs": {
+                                "statusCode": 401,
+                                "body": {
+                                    "error": "Unauthorized caller"
+                                }
+                            }
+                        }
+                    }
+                },
+                "expression": {
+                    "equals": [
+                        "@triggerOutputs()?['headers']?['x-tre-internal-key']",
+                        "dfdf"
+                    ]
+                },
+                "type": "If"
+            }
+        },
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "type": "Object",
+                "defaultValue": {}
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "type": "Object",
+            "value": {
+                "azureblob": {
+                    "id": "/subscriptions/4d38ea20-7a50-4815-9c82-527d9f182f8b/providers/Microsoft.Web/locations/uksouth/managedApis/azureblob",
+                    "connectionId": "/subscriptions/4d38ea20-7a50-4815-9c82-527d9f182f8b/resourceGroups/rg-tre-mgmt-uksouth/providers/Microsoft.Web/connections/azureblob",
+                    "connectionName": "azureblob",
+                    "connectionProperties": {
+                        "authentication": {
+                            "type": "ManagedServiceIdentity"
+                        }
+                    }
+                },
+                "outlook": {
+                    "id": "/subscriptions/4d38ea20-7a50-4815-9c82-527d9f182f8b/providers/Microsoft.Web/locations/uksouth/managedApis/outlook",
+                    "connectionId": "/subscriptions/4d38ea20-7a50-4815-9c82-527d9f182f8b/resourceGroups/rg-tre-mgmt-uksouth/providers/Microsoft.Web/connections/outlook",
+                    "connectionName": "outlook",
+                    "connectionProperties": {}
+                },
+                "keyvault": {
+                    "id": "/subscriptions/4d38ea20-7a50-4815-9c82-527d9f182f8b/providers/Microsoft.Web/locations/uksouth/managedApis/keyvault",
+                    "connectionId": "/subscriptions/4d38ea20-7a50-4815-9c82-527d9f182f8b/resourceGroups/rg-tre-mgmt-uksouth/providers/Microsoft.Web/connections/keyvault-1",
+                    "connectionName": "keyvault-1",
+                    "connectionProperties": {
+                        "authentication": {
+                            "type": "ManagedServiceIdentity"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
